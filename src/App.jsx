@@ -23,7 +23,9 @@ function App() {
 
   const handleFile = (e) => {
     const file = e.target.files[0];
-    setValue("image", file);
+    if(file){
+      setValue("image", file);
+    }
   };
 
   
@@ -32,7 +34,9 @@ function App() {
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('link', data.link);
-    formData.append('image', file);
+        if (file){
+          formData.append('image', file);
+        }
 
     axios({
       url: `${baseUrl}/banner/${selectedItem.id}`,
