@@ -10,7 +10,7 @@ function App() {
   const token = localStorage.getItem("token");
   const baseUrl = "https://api.fruteacorp.uz";
 
-  // Bannerlarni olish
+ 
   const getBanner = () => {
     axios.get(`${baseUrl}/banner`).then(res => {
       setBanner(res.data.data);
@@ -23,7 +23,7 @@ function App() {
     getBanner();
   }, []);
 
-  // Faylni tanlash
+  
   const handleFile = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -31,7 +31,6 @@ function App() {
     }
   };
 
-  // Formani yuborish
   const onSubmit = (data) => {
     const file = watch('image');
     const formData = new FormData();
@@ -61,7 +60,7 @@ function App() {
     });
   };
 
-  // Bannerni tahrirlash
+ 
   const showBanner = (banner) => {
     setSelectedItem(banner);
     setValue('title', banner.title);
@@ -69,7 +68,6 @@ function App() {
     setModalOpen(true);
   };
 
-  // Bannerni o‘chirish
   const deleteBanner = (id) => {
     axios({
       url: `${baseUrl}/banner/${id}`,
@@ -84,7 +82,6 @@ function App() {
     });
   };
 
-  // Modal yopilganda formani tozalash
   useEffect(() => {
     if (!modalOpen) {
       reset();
@@ -94,7 +91,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* Yangi banner qo‘shish tugmasi */}
+      
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setModalOpen(true)}
@@ -104,7 +101,7 @@ function App() {
         </button>
       </div>
 
-      {/* Bannerlar ro‘yxati */}
+      
       <div className="grid grid-cols-4 gap-4">
         {banner && banner.map((item, index) => (
           <div key={index} className="p-4 border rounded bg-white shadow-lg">
@@ -136,11 +133,11 @@ function App() {
         ))}
       </div>
 
-      {/* Modal (Banner qo‘shish / tahrirlash) */}
+      
       {modalOpen && (
         <div className="fixed inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
-            {/* Modalni yopish tugmasi */}
+            
             <button
               onClick={() => setModalOpen(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 text-xl"
@@ -152,7 +149,6 @@ function App() {
               Banner {selectedItem ? "Tahrirlash" : "Qo'shish"}
             </h2>
 
-            {/* Forma */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-medium mb-1">Sarlavha</label>
