@@ -3,16 +3,19 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 function App() {
-  const { register, setValue, watch, handleSubmit,reset } = useForm();
-  const [selectedItem, setSelectedItem] = useState(null)
+  const { register, setValue, watch, handleSubmit, reset } = useForm();
+  const [selectedItem, setSelectedItem] = useState(null);
   const [banner, setBanner] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false); 
+  const [modalOpen, setModalOpen] = useState(false);
   const token = localStorage.getItem("token");
   const baseUrl = "https://api.fruteacorp.uz";
 
+  // Bannerlarni olish
   const getBanner = () => {
     axios.get(`${baseUrl}/banner`).then(res => {
       setBanner(res.data.data);
+    }).catch(err => {
+      console.error("Bannerlarni olishda xatolik:", err);
     });
   };
 
@@ -20,43 +23,53 @@ function App() {
     getBanner();
   }, []);
 
-
+  // Faylni tanlash
   const handleFile = (e) => {
     const file = e.target.files[0];
-    if(file){
-      setValue("image", file);
+    if (file) {
+      setValue("image", file, { shouldValidate: true });
     }
   };
 
-  
+  // Formani yuborish
   const onSubmit = (data) => {
     const file = watch('image');
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('link', data.link);
-        if (file){
-          formData.append('image', file);
-        }
+    if (file) {
+      formData.append('image', file);
+    }
+
+    const url = selectedItem ? `${baseUrl}/banner/${selectedItem.id}` : `${baseUrl}/banner`;
+    const method = selectedItem ? 'PATCH' : 'POST';
 
     axios({
-      url: `${baseUrl}/banner/${selectedItem.id}`,
-      method: selectedItem? 'PATCH': 'POST',
+      url: url,
+      method: method,
       data: formData,
       headers: {
         Authorization: `Bearer ${token}`,
       }
-    }).then((res) => {
-      setModalOpen(false); 
-      getBanner(); 
+    }).then(() => {
+      setModalOpen(false);
+      getBanner();
       reset();
+      setSelectedItem(null);
+    }).catch(err => {
+      console.error("Banner qo'shishda/tahrirlashda xatolik:", err);
     });
   };
-  const  showBanner = (banner)=>{
-     setValue('title',banner.title)
-     setValue('link',banner.link)
-    setSelectedItem(banner)
-     setModalOpen(true)
-  }
+
+  // Bannerni tahrirlash
+  const showBanner = (banner) => {
+    setSelectedItem(banner);
+    setValue('title', banner.title);
+    setValue('link', banner.link);
+    setModalOpen(true);
+  };
+
+  // Bannerni o‘chirish
   const deleteBanner = (id) => {
     axios({
       url: `${baseUrl}/banner/${id}`,
@@ -66,16 +79,23 @@ function App() {
       }
     }).then(() => {
       getBanner();
+    }).catch(err => {
+      console.error("Banner o'chirishda xatolik:", err);
     });
-  }
+  };
+
+  // Modal yopilganda formani tozalash
+  useEffect(() => {
+    if (!modalOpen) {
+      reset();
+      setSelectedItem(null);
+    }
+  }, [modalOpen]);
 
   return (
-    
     <div className="min-h-screen bg-gray-100 p-6">
-      
-      
+      {/* Yangi banner qo‘shish tugmasi */}
       <div className="flex justify-end mb-4">
-      
         <button
           onClick={() => setModalOpen(true)}
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
@@ -84,47 +104,43 @@ function App() {
         </button>
       </div>
 
-    
+      {/* Bannerlar ro‘yxati */}
       <div className="grid grid-cols-4 gap-4">
         {banner && banner.map((item, index) => (
           <div key={index} className="p-4 border rounded bg-white shadow-lg">
             <img className="w-full h-40 object-cover rounded" src={`${baseUrl}/images/${item.image}`} alt={item.title} />
             <h3 className="mt-2 text-lg font-semibold">{item.title}</h3>
             <div className="flex gap-2 mt-2">
-  <a
-    href={item.link}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 transition"
-  >
-    Batafsil
-  </a>
-
-  <button
-    onClick={() => showBanner(item)}
-    className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-700 transition"
-  >
-    Edit
-  </button>
-
-  <button
-    onClick={() => deleteBanner(item.id)}
-    className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-700 transition"
-  >
-    O'chirish
-  </button>
-</div>
-
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-700 transition"
+              >
+                Batafsil
+              </a>
+              <button
+                onClick={() => showBanner(item)}
+                className="bg-green-500 text-white py-1 px-3 rounded hover:bg-green-700 transition"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => deleteBanner(item.id)}
+                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-700 transition"
+              >
+                O'chirish
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      
+      {/* Modal (Banner qo‘shish / tahrirlash) */}
       {modalOpen && (
-        <div className="fixed inset-0  bg-opacity-60 backdrop-blur-md flex items-center justify-center">
+        <div className="fixed inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
-            
-          
+            {/* Modalni yopish tugmasi */}
             <button
               onClick={() => setModalOpen(false)}
               className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 text-xl"
@@ -133,11 +149,11 @@ function App() {
             </button>
 
             <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-              Banner Qo'shish
+              Banner {selectedItem ? "Tahrirlash" : "Qo'shish"}
             </h2>
 
+            {/* Forma */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        
               <div>
                 <label className="block text-gray-700 font-medium mb-1">Sarlavha</label>
                 <input
@@ -158,7 +174,6 @@ function App() {
                 />
               </div>
 
-         
               <div>
                 <label className="block text-gray-700 font-medium mb-1">Rasm yuklash</label>
                 <input
