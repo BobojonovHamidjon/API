@@ -14,8 +14,13 @@ function Login() {
         data:data,
     }).then ((res)=>{
         localStorage.setItem("token",res.data.data.accessToken.token);
+        toast.success("Muvaffaqiyatli o'tdi" )
         navigate('/dashboard')
         
+    }).catch (err=>{
+      toast.error("Xatolik yuz berdi, iltimos qaytadan urinib ko'ring");
+      console.log(err);
+      
     })
   };
 
